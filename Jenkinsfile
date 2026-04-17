@@ -98,40 +98,6 @@
                 }
             }
 
-            stage('Compose up') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
-                steps {
-                    sh '''
-                        set -e
-                        . ./.jenkins_runtime.env
-                        set -a
-                        . ./.jenkins_build_plan.env
-                        eval "$(python3.11 scripts/ci_compose_env.py)"
-                        set +a
-                        docker-compose up -d
-                        docker-compose ps
-                    '''
-                }
-            }
-
-            stage('Verify stack') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
-                steps {
-                    sh '''
-                        set -e
-                        docker-compose ps
-                    '''
-                }
-            }
-
             stage('AWS ECR push') {
                 when {
                     expression {
