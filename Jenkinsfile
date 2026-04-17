@@ -109,6 +109,8 @@
                         set -e
                         . ./.jenkins_runtime.env
                         . ./.jenkins_build_plan.env
+                        python3.11 -m ensurepip
+                        python3.11 -m pip install boto3
                         python3.11 scripts/ci_docker_push.py
                     '''
                 }
