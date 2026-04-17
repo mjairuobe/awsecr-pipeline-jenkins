@@ -45,9 +45,6 @@ def main() -> int:
 
     for svc in svcs:
         key = path_to_env_key(svc, "BUILDSVC")
-        if plan.get(key) != "1":
-            print(f"skip build {svc}")
-            continue
         repo = image_for_service(modules, svc)
         tk = path_to_env_key(svc, "TREE")
         tree = rt.get(tk, "00000").lower()
