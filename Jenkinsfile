@@ -9,10 +9,6 @@
             timeout(time: 60, unit: 'MINUTES')
         }
 
-        environment {
-            // No longer need DOCKERHUB_CREDS_ID
-        }
-
         stages {
             stage('Checkout') {
                 steps {
@@ -170,7 +166,6 @@
                     '''
                 }
             }
-
         }
 
         post {
