@@ -1,126 +1,78 @@
-    // Modular CI Template (Repo-Root): modules.json → Packages + Services, Tree-Tags, partieller Build
-    // Skripte: scripts/ci_*.py (Python 3.11+)
+// RSS-Lambda: Docker-Image bauen, nach ECR pushen, Lambda-Funktion aus dem Image bereitstellen.
 
-    pipeline {
-        agent any
+pipeline {
+    agent any
 
-        options {
-            timestamps()
-            timeout(time: 60, unit: 'MINUTES')
-        }
+    environment {
+        AWS_REGION = 'eu-central-1'
+        ECR_REGISTRY = '423623826655.dkr.ecr.eu-central-1.amazonaws.com'
+        ECR_REPOSITORY = 'dflowp/news-archive-lambda'
+        LAMBDA_FUNCTION_NAME = 'rss-lambda'
+        LAMBDA_ROLE_ARN = 'arn:aws:iam::423623826655:role/service-role/rss-lamda-role-if7gg0ib'
+        IMAGE_URI = "${ECR_REGISTRY}/${ECR_REPOSITORY}:latest"
+    }
 
-        stages {
-            stage('Checkout') {
-                steps {
-                    checkout scm
-                }
-            }
+    options {
+        timestamps()
+        timeout(time: 60, unit: 'MINUTES')
+    }
 
-            stage('Fetch git tags') {
-                steps {
-                    sh '''
-                        set -e
-                        git remote get-url origin >/dev/null 2>&1 && git fetch origin --tags --force || git fetch --tags --force || true
-                        git tag -l 'v*' | tail -5 || true
-                    '''
-                }
-            }
-
-            stage('Resolve version & tree') {
-                steps {
-                    sh '''
-                        set -e
-                        python3.11 scripts/ci_resolve_version.py
-                        . ./.jenkins_runtime.env
-                        echo "SOFTWARE_VERSION=${SOFTWARE_VERSION}"
-                    '''
-                }
-            }
-
-
-            stage('Cleanup containers') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
-                steps {
-                    sh '''
-                        docker container stop $(docker container ls -aq) 2>/dev/null || true
-                        docker container rm $(docker container ls -aq) 2>/dev/null || true
-                    '''
-                }
-            }
-
-            stage('Generate Dockerfile') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
-                steps {
-                    sh '''
-                        set -e
-                        python3.11 scripts/ci_generate_dockerfile.py
-                    '''
-                }
-            }
-
-            stage('AWS ECR Login') {
-                steps {
-                    sh '''
-                        set -e
-                        aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.eu-central-1.amazonaws.com
-                    '''
-                }
-            }
-
-            stage('Docker build (selective)') {
-                steps {
-                    sh '''
-                        set -e
-                        docker build -t dflowp/news-archive-lambda example-services/rss-lambda
-                        docker tag dflowp/news-archive-lambda:latest 423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest
-                    '''
-                }
-            }
-
-            stage('AWS ECR push') {
-                steps {
-                    sh '''
-                        docker push 423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest
-                    '''
-                }
-            }
-
-            stage('Deploy Lambda') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
-                steps {
-                    sh '''
-                        set -e
-                        . ./.jenkins_runtime.env
-                        # Assuming ECR_IMAGE_URI is constructed from registry and image name
-                        # You can customize this based on how you want to target the specific Lambda image
-                        export LAMBDA_ROLE_ARN="arn:aws:iam::423623826655:role/service-role/rss-lamda-role-if7gg0ib"
-                        export ECR_IMAGE_URI="423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest"
-                        pip3 install boto3
-                        python3.11 scripts/deploy_lambda.py
-                    '''
-                }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
         }
 
-        post {
-            success {
-                script {
-                    if (fileExists('.jenkins_skip_pipeline') && readFile('.jenkins_skip_pipeline').trim() == 'true') {
-                        echo '=== SKIP: Stack entspricht bereits den erwarteten Tree-Tags. ==='
-                    }
-                }
+        stage('AWS ECR Login') {
+            steps {
+                sh '''
+                    set -e
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                '''
+            }
+        }
+
+        stage('Docker build') {
+            steps {
+                sh '''
+                    set -e
+                    docker build -t ${ECR_REPOSITORY}:latest .
+                    docker tag ${ECR_REPOSITORY}:latest ${IMAGE_URI}
+                '''
+            }
+        }
+
+        stage('AWS ECR push') {
+            steps {
+                sh '''
+                    set -e
+                    docker push ${IMAGE_URI}
+                '''
+            }
+        }
+
+        stage('Deploy Lambda from image') {
+            steps {
+                sh '''
+                    set -e
+                    if aws lambda get-function --function-name "${LAMBDA_FUNCTION_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+                        echo "Updating existing Lambda ${LAMBDA_FUNCTION_NAME}..."
+                        aws lambda update-function-code \
+                            --function-name "${LAMBDA_FUNCTION_NAME}" \
+                            --image-uri "${IMAGE_URI}" \
+                            --region "${AWS_REGION}"
+                    else
+                        echo "Creating Lambda ${LAMBDA_FUNCTION_NAME} from image..."
+                        aws lambda create-function \
+                            --function-name "${LAMBDA_FUNCTION_NAME}" \
+                            --package-type Image \
+                            --code "ImageUri=${IMAGE_URI}" \
+                            --role "${LAMBDA_ROLE_ARN}" \
+                            --region "${AWS_REGION}"
+                    fi
+                '''
             }
         }
     }
+}
