@@ -79,7 +79,7 @@
                 steps {
                     sh '''
                         set -e
-                        docker build -t ./dflowp/news-archive-lambda example-service/rss-lambda
+                        docker build -t dflowp/news-archive-lambda example-service/rss-lambda
                         docker tag dflowp/news-archive-lambda:latest 423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest
                     '''
                 }
