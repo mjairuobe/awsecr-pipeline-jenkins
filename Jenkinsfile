@@ -96,12 +96,7 @@
             stage('AWS ECR push') {
                 steps {
                     sh '''
-                        set -e
-                        . ./.jenkins_runtime.env
-                        . ./.jenkins_build_plan.env
-                        python3.11 -m ensurepip
-                        python3.11 -m pip install boto3
-                        python3.11 scripts/ci_docker_push.py
+                        docker push 423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest
                     '''
                 }
             }
