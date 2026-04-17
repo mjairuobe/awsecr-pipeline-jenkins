@@ -54,8 +54,6 @@ def main() -> int:
             "docker",
             "build",
             *dockerfile_args,
-            "--target",
-            target,
             "-t",
             f"dflowp/news-archive-lambda",
             ".",
