@@ -10,7 +10,7 @@
         }
 
         environment {
-            # No longer need DOCKERHUB_CREDS_ID
+            // No longer need DOCKERHUB_CREDS_ID
         }
 
         stages {
@@ -162,8 +162,8 @@
                     sh '''
                         set -e
                         . ./.jenkins_runtime.env
-                        # Assuming ECR_IMAGE_URI is constructed from registry and image name
-                        # You can customize this based on how you want to target the specific Lambda image
+                        // Assuming ECR_IMAGE_URI is constructed from registry and image name
+                        // You can customize this based on how you want to target the specific Lambda image
                         export LAMBDA_ROLE_ARN="arn:aws:iam::123456789012:role/lambda-role"
                         export ECR_IMAGE_URI="123456789012.dkr.ecr.eu-central-1.amazonaws.com/rss-lambda:latest"
                         python3.11 scripts/deploy_lambda.py
