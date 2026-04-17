@@ -3,7 +3,7 @@ import os
 
 def deploy_lambda():
     region = "eu-central-1"
-    function_name = "rss-lambda-taz"
+    function_name = "rss-lambda"
     role_arn = os.getenv("LAMBDA_ROLE_ARN")
     image_uri = os.getenv("ECR_IMAGE_URI")
 
