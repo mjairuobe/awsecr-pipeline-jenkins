@@ -85,11 +85,6 @@
             }
 
             stage('Docker build (selective)') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
                 steps {
                     sh '''
                         set -e
@@ -99,11 +94,6 @@
             }
 
             stage('AWS ECR push') {
-                when {
-                    expression {
-                        return !fileExists('.jenkins_skip_pipeline') || readFile('.jenkins_skip_pipeline').trim() != 'true'
-                    }
-                }
                 steps {
                     sh '''
                         set -e
