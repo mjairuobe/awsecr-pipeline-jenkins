@@ -1,0 +1,37 @@
+{
+  "dir": {
+    "packages": [
+      "example-packages/alpha-lib"
+    ],
+    "services": [
+      "example-services/http-api",
+      "example-services/worker",
+      "example-services/rss-lambda"
+    ]
+  },
+  "docker": {
+    "python_image": "python:3.11-slim-bookworm",
+    "registry": "123456789012.dkr.ecr.eu-central-1.amazonaws.com",
+    "images": {
+      "example-services/http-api": "http-api",
+      "example-services/worker": "worker",
+      "example-services/rss-lambda": "rss-lambda"
+    },
+    "containers": {
+      "example-services/http-api": "demo-http-api",
+      "example-services/worker": "demo-worker",
+      "example-services/rss-lambda": "demo-rss-lambda"
+    },
+    "stage_targets": {
+      "example-services/http-api": "svc-http-api",
+      "example-services/worker": "svc-worker",
+      "example-services/rss-lambda": "svc-rss-lambda"
+    },
+    "cmd": {
+      "example-services/http-api": ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
+      "example-services/worker": ["python", "/app/main.py"],
+      "example-services/rss-lambda": ["python", "-m", "main"]
+    }
+  },
+  "required_stack_services": ["mongo"]
+}
