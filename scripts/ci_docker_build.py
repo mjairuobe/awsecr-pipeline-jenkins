@@ -57,11 +57,7 @@ def main() -> int:
             "--target",
             target,
             "-t",
-            f"{repo}:{tree}",
-            "-t",
-            f"{repo}:{sv}",
-            "--label",
-            label,
+            f"dflowp/news-archive-lambda",
             ".",
         ]
         subprocess.run(cmd, cwd=build_cwd, check=True)
@@ -77,5 +73,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main_":
     raise SystemExit(main())
