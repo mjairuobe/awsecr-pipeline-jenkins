@@ -41,7 +41,7 @@
                 steps {
                     sh '''
                         set -e
-                        python3.11 scripts/ci_build_plan.py
+                        # python3.11 scripts/ci_build_plan.py
                         cat .jenkins_skip_pipeline || true
                     '''
                 }
