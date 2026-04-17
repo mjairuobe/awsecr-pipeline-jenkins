@@ -7,7 +7,7 @@
   },
   "docker": {
     "python_image": "python:3.11-slim-bookworm",
-    "registry": "123456789012.dkr.ecr.eu-central-1.amazonaws.com",
+    "registry": "423623826655.dkr.ecr.eu-central-1.amazonaws.com",
     "images": {
       "example-services/rss-lambda": "rss-lambda"
     },
