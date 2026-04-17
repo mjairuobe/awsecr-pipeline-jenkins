@@ -124,8 +124,8 @@
                     sh '''
                         set -e
                         . ./.jenkins_runtime.env
-                        // Assuming ECR_IMAGE_URI is constructed from registry and image name
-                        // You can customize this based on how you want to target the specific Lambda image
+                        # Assuming ECR_IMAGE_URI is constructed from registry and image name
+                        # You can customize this based on how you want to target the specific Lambda image
                         export LAMBDA_ROLE_ARN="arn:aws:iam::423623826655:instance-profile/jenkins-deployment-role"
                         export ECR_IMAGE_URI="423623826655.dkr.ecr.eu-central-1.amazonaws.com/dflowp/news-archive-lambda:latest"
                         python3.11 scripts/deploy_lambda.py
