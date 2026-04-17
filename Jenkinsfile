@@ -37,7 +37,8 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    docker build -t ${ECR_REPOSITORY}:latest .
+                    # Build-Kontext: Repo-Root; Quellen unter function/, Dockerfile im Root
+                    docker build -f Dockerfile -t ${ECR_REPOSITORY}:latest .
                     docker tag ${ECR_REPOSITORY}:latest ${IMAGE_URI}
                 '''
             }

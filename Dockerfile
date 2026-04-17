@@ -1,9 +1,8 @@
 # AWS Lambda container image (Python)
 FROM public.ecr.aws/lambda/python:3.11
 
-COPY requirements.txt ${LAMBDA_TASK_ROOT}/
-RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
+COPY function ${LAMBDA_TASK_ROOT}/function
 
-COPY main.py ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/function/requirements.txt
 
-CMD [ "main.handler" ]
+CMD [ "function.main.handler" ]
